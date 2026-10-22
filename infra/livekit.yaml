@@ -1,0 +1,21 @@
+# LiveKit Server Configuration — Self-Hosted
+# Docs: https://docs.livekit.io/home/self-hosting/ports-firewall/
+
+port: 7880          # HTTP + WebSocket signalling (SDP exchange, token auth)
+
+rtc:
+  tcp_port: 7881                # TCP fallback for media when UDP is blocked
+  port_range_start: 50000       # UDP media range — RTP/RTCP for audio/video
+  port_range_end: 50100         # each participant pair uses one UDP port
+  use_external_ip: false        # local dev
+  node_ip: 127.0.0.1
+
+turn:
+  enabled: false                # Not needed on localhost
+
+keys:
+  # API key : secret — used by agents, backend, and token generation
+  APInKAhvt3yFR9G: aBc1dEf2gHi3jKl4mNo5pQr6sTu7vWx8yZ90ABCD
+
+logging:
+  level: info
