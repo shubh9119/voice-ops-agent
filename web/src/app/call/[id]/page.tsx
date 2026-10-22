@@ -113,7 +113,14 @@ export default function CustomerCallPage() {
         // 5. Connect room
         await lkRoom.connect(wsUrl, token);
 
-        // 6. Publish customer microphone track
+        // 6. Resume browser audio context for crystal-clear output
+        try {
+          await lkRoom.startAudio();
+        } catch {
+          // Auto-resumes on first user gesture if browser policy requires it
+        }
+
+        // 7. Publish customer microphone track
         await lkRoom.localParticipant.setMicrophoneEnabled(true);
 
         setRoom(lkRoom);

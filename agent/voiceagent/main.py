@@ -17,6 +17,15 @@ import json
 import logging
 import os
 import time
+from datetime import datetime
+
+# Explicitly load .env from workspace root
+from dotenv import load_dotenv
+_cur_dir = os.path.dirname(os.path.abspath(__file__))
+_root_env = os.path.abspath(os.path.join(_cur_dir, "..", "..", ".env"))
+load_dotenv(_root_env, override=True)
+load_dotenv(os.path.join(_cur_dir, "..", ".env"), override=True)
+load_dotenv(".env", override=True)
 
 # Ensure LiveKit server connection defaults
 os.environ.setdefault("LIVEKIT_URL", "ws://localhost:7880")
@@ -105,7 +114,8 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
         )
 
         # ---- Check whether cloud API keys are available ----
-        deepgram_key = os.environ.get("DEEPGRAM_API_KEY", "").strip()
+        deepgram_key = (os.environ.get("DEEPGRAM_API_KEY") or settings.deepgram_api_key or "").strip()
+        groq_key = (os.environ.get("GROQ_API_KEY") or settings.groq_api_key or settings.llm_api_key or "").strip()
         has_deepgram = bool(deepgram_key and not deepgram_key.startswith("your-"))
 
         if not has_deepgram:
@@ -122,46 +132,56 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
             )
             return
 
+        # ---- Determine LLM Model ----
+        llm_model_name = agent_config.get("model") or settings.llm_model or "qwen/qwen3.8-27b"
+        if "llama-3.3" in llm_model_name:
+            llm_model_name = "qwen/qwen3.8-27b"
+
+        log.info(
+            "Starting Production Cloud Voice Pipeline: Deepgram Nova-3 STT + Groq (%s) + Deepgram Aura-2 TTS (speed=%.2f)",
+            llm_model_name,
+            settings.tts_speed,
+        )
+
         # ---- Voice-pipeline components (Production Mode) ----
         vad_instance = job_ctx.proc.userdata.get("vad") or silero.VAD.load(
             min_silence_duration=0.3,
+            min_speech_duration=0.1,
         )
 
         stt_instance = deepgram.STT(
             model=settings.stt_model,
             language="en",
+            api_key=deepgram_key,
         )
 
         llm_instance = lk_openai.LLM(
-            model=settings.llm_model,
+            model=llm_model_name,
             base_url=settings.llm_base_url,
-            api_key=settings.llm_api_key or os.environ.get("GROQ_API_KEY", ""),
+            api_key=groq_key,
             temperature=settings.llm_temperature,
             max_completion_tokens=settings.max_reply_tokens,
         )
 
         tts_instance = deepgram.TTS(
             model=settings.tts_voice,
+            api_key=deepgram_key,
             speed=settings.tts_speed,
         )
 
         # ---- Turn-handling configuration ----
         turn_config: dict = {
+            "turn_detection": "vad",
             "endpointing": {
                 "min_delay": settings.min_endpointing_delay,
                 "max_delay": settings.max_endpointing_delay,
             },
             "interruption": {
                 "enabled": True,
-                "min_duration": 0.4,
+                "mode": "vad",
+                "min_duration": 0.3,
             },
         }
-        if settings.use_turn_detector:
-            try:
-                turn_config["turn_detection"] = turn_detector.MultilingualModel()
-                log.info("Turn detector enabled with MultilingualModel")
-            except Exception as e:
-                log.warning("Turn detector model unavailable or failed to load, falling back to VAD endpointing: %s", e)
 
         # ---- Create the AgentSession ----
         session = AgentSession(
@@ -201,6 +221,12 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
         def _on_disconnect() -> None:
             disconnect_event.set()
 
+        @job_ctx.room.on("participant_disconnected")
+        def _on_p_disconnect(p: rtc.RemoteParticipant) -> None:
+            log.info("Participant disconnected: %s", p.identity)
+            if p.identity.startswith("customer-"):
+                disconnect_event.set()
+
         await disconnect_event.wait()
         log.info("Room disconnected for call %s", call_id)
 
@@ -209,6 +235,7 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
     finally:
         # ---- Report call ended & clean up ----
         try:
+            await asyncio.sleep(0.6)  # allow pending async recorder tasks to flush
             await backend.report_ended(call_id)
         except Exception:
             log.exception("Failed to report call ended for %s", call_id)
