@@ -57,14 +57,26 @@ async def run_compliance(call_id: str, session: AsyncSession) -> list[Compliance
 
     # Rule 3: No refund promise (LLM)
     # Check OpenAI key or Groq key
-    api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY") or settings.llm_api_key or os.getenv("GROQ_API_KEY") or ""
-    base_url = None
-    model = settings.llm_compliance_model
+    openai_key = (settings.openai_api_key or os.getenv("OPENAI_API_KEY") or "").strip()
+    if openai_key.startswith("your-"):
+        openai_key = ""
 
-    # If using Groq key fallback:
-    if not settings.openai_api_key and (settings.llm_api_key or os.getenv("GROQ_API_KEY")):
+    groq_key = (settings.groq_api_key or settings.llm_api_key or os.getenv("GROQ_API_KEY") or "").strip()
+    if groq_key.startswith("your-"):
+        groq_key = ""
+
+    if openai_key:
+        api_key = openai_key
+        base_url = None
+        model = settings.llm_compliance_model
+    elif groq_key:
+        api_key = groq_key
         base_url = "https://api.groq.com/openai/v1"
         model = "llama-3.3-70b-versatile"
+    else:
+        api_key = ""
+        base_url = None
+        model = settings.llm_compliance_model
 
     res_refund = await check_no_refund_promise(
         turns=turn_dicts,

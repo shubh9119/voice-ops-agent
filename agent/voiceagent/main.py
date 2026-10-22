@@ -132,8 +132,10 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
             language="en",
         )
 
-        llm_instance = lk_openai.LLM.with_groq(
+        llm_instance = lk_openai.LLM(
             model=settings.llm_model,
+            base_url=settings.llm_base_url,
+            api_key=settings.llm_api_key or os.environ.get("GROQ_API_KEY", ""),
             temperature=settings.llm_temperature,
         )
 

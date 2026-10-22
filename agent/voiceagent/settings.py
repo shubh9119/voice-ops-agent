@@ -28,12 +28,14 @@ class Settings(BaseSettings):
     # ---- LLM (Groq, OpenAI-compatible) ----
     llm_base_url: str = "https://api.groq.com/openai/v1"
     llm_api_key: str = ""  # Set via GROQ_API_KEY or LLM_API_KEY env var
+    groq_api_key: str = ""
     llm_model: str = "llama-3.3-70b-versatile"
     max_reply_tokens: int = 160
     llm_temperature: float = 0.4
 
     # ---- STT (Deepgram) ----
     stt_model: str = "nova-3"
+    deepgram_api_key: str = ""
 
     # ---- TTS (Deepgram) ----
     tts_voice: str = "aura-2-thalia-en"
