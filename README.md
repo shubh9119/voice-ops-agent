@@ -10,7 +10,7 @@
 
 ---
 
-> 🎥 **Demo Video:** [Watch Video Walkthrough (Loom / YouTube) — *link to be updated*]  
+> 🎥 **Demo Video:** [Watch Walkthrough Video (Google Drive)](https://drive.google.com/file/d/12peoLjCoylgPc3ARu7UZsqhAeJmj7DjB/view?usp=sharing)  
 > 📦 **GitHub Repository:** [https://github.com/shubh9119/voice-ops-agent](https://github.com/shubh9119/voice-ops-agent)
 
 ---
