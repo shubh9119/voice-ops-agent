@@ -137,10 +137,12 @@ async def entrypoint(job_ctx: JobContext) -> None:  # noqa: C901 (complexity acc
             base_url=settings.llm_base_url,
             api_key=settings.llm_api_key or os.environ.get("GROQ_API_KEY", ""),
             temperature=settings.llm_temperature,
+            max_completion_tokens=settings.max_reply_tokens,
         )
 
         tts_instance = deepgram.TTS(
             model=settings.tts_voice,
+            speed=settings.tts_speed,
         )
 
         # ---- Turn-handling configuration ----

@@ -72,7 +72,7 @@ async def run_compliance(call_id: str, session: AsyncSession) -> list[Compliance
     elif groq_key:
         api_key = groq_key
         base_url = "https://api.groq.com/openai/v1"
-        model = "llama-3.3-70b-versatile"
+        model = os.getenv("LLM_COMPLIANCE_MODEL", "qwen/qwen3.8-27b")
     else:
         api_key = ""
         base_url = None
