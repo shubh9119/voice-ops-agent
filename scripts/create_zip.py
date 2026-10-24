@@ -6,6 +6,7 @@ ZIP_PATH = os.path.join(ROOT, "voice-ops-agent.zip")
 
 EXCLUDE_DIRS = {"node_modules", ".next", "__pycache__", ".pytest_cache", ".git"}
 EXCLUDE_EXTS = {".pyc", ".db", ".zip"}
+EXCLUDE_FILES = {".env", ".env.local", ".env.development.local", ".env.test.local", ".env.production.local"}
 
 count = 0
 with zipfile.ZipFile(ZIP_PATH, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -15,7 +16,7 @@ with zipfile.ZipFile(ZIP_PATH, "w", zipfile.ZIP_DEFLATED) as zipf:
 
         for file in files:
             ext = os.path.splitext(file)[1].lower()
-            if ext in EXCLUDE_EXTS or file.endswith(".zip"):
+            if ext in EXCLUDE_EXTS or file.endswith(".zip") or file in EXCLUDE_FILES:
                 continue
 
             full_path = os.path.join(root, file)
