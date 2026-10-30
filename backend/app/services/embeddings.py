@@ -40,8 +40,9 @@ class EmbeddingService:
 
         if HAS_GENAI and not is_test_key:
             try:
+                model_name = settings.EMBEDDING_MODEL.replace("models/", "")
                 self.embeddings = GoogleGenerativeAIEmbeddings(
-                    model=settings.EMBEDDING_MODEL,
+                    model=model_name,
                     google_api_key=key,
                 )
             except Exception:

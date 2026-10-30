@@ -46,7 +46,7 @@ async def health_check():
 
 @router.post("/settings/api-key")
 async def set_api_key(body: APIKeyUpdate):
-    """Dynamically set or update Gemini API key at runtime."""
+    """Dynamically set or update Gemini API key at runtime and persist to .env."""
     key = body.api_key.strip()
     if not key:
         return {"status": "error", "detail": "API key cannot be empty"}
@@ -56,6 +56,19 @@ async def set_api_key(body: APIKeyUpdate):
 
     embeddings = EmbeddingService.get_instance()
     embeddings.reinit(api_key=key)
+
+    try:
+        from pathlib import Path
+        env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+        env_lines = []
+        if env_path.exists():
+            with open(env_path, "r", encoding="utf-8") as f:
+                env_lines = [line for line in f.readlines() if not line.startswith("GOOGLE_API_KEY=")]
+        env_lines.append(f"GOOGLE_API_KEY={key}\n")
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.writelines(env_lines)
+    except Exception:
+        pass
 
     return {
         "status": "ok",
