@@ -1,0 +1,54 @@
+{
+  "documents": [
+    {
+      "brand": "Asana",
+      "source": "https://www.techradar.com/reviews/asana-project-management-review",
+      "text": "Asana Review 2026: Pricing and Feature Breakdown.\nAsana continues to lead the project management space with its refined workflow builder and intuitive timeline views.\nPricing in 2026 starts with a generous Free Personal tier for up to 10 users. The Starter plan is priced at $10.99 per user per month billed annually ($13.49 billed monthly). The Advanced plan costs $24.99 per user per month, unlocking advanced reporting, workload balancing, and unlimited portfolio views.\nReviewers praise Asana's clean interface and versatile task dependencies, though some note that pricing gets steep quickly for mid-sized growing teams compared to budget alternatives like Trello."
+    },
+    {
+      "brand": "Trello",
+      "source": "https://www.pcmag.com/reviews/trello",
+      "text": "Trello 2026 Hands-On: Still the King of Kanban?\nTrello remains one of the simplest and most accessible project management tools. Built around classic kanban boards, lists, and cards, it requires virtually zero onboarding time.\nTrello's pricing remains very competitive: the Free plan supports unlimited cards and up to 10 boards per workspace. The Standard tier starts at $5.00 per user per month (billed annually), adding unlimited boards and custom fields. The Premium tier is $10.00 per user per month, offering Dashboard, Timeline, and Calendar views.\nCompared to Asana, reviewers frequently emphasize that Trello is substantially more affordable and simpler, though it lacks native complex dependency management and deep resource planning out of the box."
+    },
+    {
+      "brand": "Monday.com",
+      "source": "https://www.forbes.com/advisor/business/software/monday-com-review",
+      "text": "Monday.com Work OS Review 2026: Flexibility at Scale.\nMonday.com positions itself as a complete Work OS with colorful status columns, visual boards, and extensive automation recipes.\nMonday.com pricing requires a minimum of 3 seats across all paid tiers: Basic starts at $9 per seat per month ($27/mo min), Standard at $12 per seat per month ($36/mo min), and Pro at $19 per seat per month ($57/mo min).\nReviewers celebrate its vibrant interface and customizable dashboards. Common critiques include the rigid 3-seat minimum requirement which penalizes solo founders or pairs, and a slightly steeper learning curve than Trello."
+    },
+    {
+      "brand": "ClickUp",
+      "source": "https://www.g2.com/products/clickup/reviews",
+      "text": "ClickUp: The All-In-One Productivity Suite Review.\nClickUp markets itself as 'one app to replace them all', incorporating docs, whiteboards, goals, chat, and task management into a single platform.\nClickUp pricing is aggressive: Free Forever tier with 100MB storage; Unlimited plan at $7 per user per month; and Business plan at $12 per user per month.\nReviewers highlight ClickUp's massive feature depth and high value-for-money ratio. However, power users and tech leads frequently report occasional performance lags, feature bloat, and an overwhelming settings menu."
+    },
+    {
+      "brand": "Notion",
+      "source": "https://www.theverge.com/reviews/notion-workspace-review",
+      "text": "Notion Projects & Wikis: How Notion Took Over Tech Teams.\nNotion combines flexible markdown documents, databases, kanban boards, and AI integration into a unified workspace.\nPricing features a robust Free tier for individuals. The Plus plan is $10 per seat per month ($8 billed annually) with unlimited blocks and file uploads. The Business plan is $15 per seat per month.\nReviewers love the unmatched flexibility and aesthetic customization of Notion databases, but note that it requires significant setup time and lacks traditional Gantt critical-path calculation compared to dedicated PM software like Asana."
+    },
+    {
+      "brand": "Asana",
+      "source": "https://www.capterra.com/p/asana-vs-monday",
+      "text": "Asana vs Monday.com: Head-to-Head Comparison.\nWhen comparing workflow automation, Asana's rules engine is known for reliability and deep enterprise integrations (Salesforce, Jira, Slack). Reviewers highlight Asana's Workload view as the best in class for preventing team burnout.\nOn the downside, Asana does not offer built-in spreadsheet-like calculations inside task columns, an area where Monday.com and ClickUp excel."
+    },
+    {
+      "brand": "Trello",
+      "source": "https://zapier.com/blog/best-kanban-software-trello",
+      "text": "Best Kanban Apps: Why Trello Stays Relevant.\nTrello's Power-Up ecosystem allows users to connect integrations like Google Drive, GitHub, and Slack directly into card workflows. Butler automation provides simple no-code automation rules.\nReviewers note that while Trello is ideal for lightweight Agile sprints and content calendars, large engineering teams often outgrow it and migrate to Jira or Asana as subtask nesting needs increase."
+    },
+    {
+      "brand": "Monday.com",
+      "source": "https://www.businessinsider.com/monday-com-project-management-features",
+      "text": "Automations and Dashboards on Monday.com.\nMonday.com's primary differentiator is its pre-built automation recipes, allowing users to trigger Slack alerts, reassign owners, or move cards between boards without coding.\nEnterprise reviewers appreciate the cross-board reporting capabilities, although permissions management on lower-tier plans can be somewhat restrictive."
+    },
+    {
+      "brand": "ClickUp",
+      "source": "https://www.trustradius.com/products/clickup/reviews",
+      "text": "ClickUp Verified User Reviews & Benchmarks.\nSurveyed users rate ClickUp 8.8/10 for feature variety and customization. Custom statuses, multiple assignees, and native time tracking are included even on entry tiers.\nThe most frequent complaint remains stability during heavy data import and occasional notification delays on mobile applications."
+    },
+    {
+      "brand": "Notion",
+      "source": "https://www.fastcompany.com/notion-productivity-review",
+      "text": "Building Modern Workflows with Notion.\nNotion's relational database capabilities allow teams to link Project pages directly with Company Goals, Meeting Notes, and Sprint Tasks.\nCritics point out that offline functionality is limited and permissions can become convoluted when sharing nested pages with external clients."
+    }
+  ]
+}

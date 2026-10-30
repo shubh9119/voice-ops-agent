@@ -1,73 +1,67 @@
-"""FastAPI application factory and lifespan handler."""
-
-from __future__ import annotations
+"""FastAPI application entry point."""
 
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from app.db import create_all, get_session, init_engine
-from app.seed import seed_agents
-from app.routers import agents, calls, internal, operator
+from app.config import get_settings
+from app.routers import health, ingest, ask
 
+# Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)-8s %(name)s – %(message)s",
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
 )
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Startup / shutdown lifecycle for the application."""
-    logger.info("Starting up …")
-    init_engine()
-    await create_all()
-
-    # Seed default agents inside a fresh session.
-    async for session in get_session():
-        await seed_agents(session)
-        break  # only one iteration needed
-
-    yield  # ← application runs here
-
-    logger.info("Shutting down …")
+async def lifespan(app: FastAPI):
+    """Application lifespan: startup and shutdown hooks."""
+    settings = get_settings()
+    logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info(f"LLM model: {settings.LLM_MODEL}")
+    logger.info(f"Embedding model: {settings.EMBEDDING_MODEL}")
+    logger.info(f"ChromaDB dir: {settings.CHROMA_PERSIST_DIR}")
+    yield
+    logger.info("Shutting down...")
 
 
-def create_app() -> FastAPI:
-    """Build and configure the FastAPI application."""
-    application = FastAPI(
-        title="VoiceOps AI – Backend",
-        description="Operator-guided voice AI agent system",
-        version="0.1.0",
-        lifespan=_lifespan,
+app = FastAPI(
+    title="Omnibound Brand Q&A Agent",
+    description=(
+        "RAG-powered brand research API. Ingest web pages and articles "
+        "about brands, then ask questions answered from that corpus."
+    ),
+    version=get_settings().APP_VERSION,
+    lifespan=lifespan,
+)
+
+# CORS
+settings = get_settings()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register routers
+app.include_router(health.router)
+app.include_router(ingest.router)
+app.include_router(ask.router)
+
+
+# Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch-all exception handler for unhandled errors."""
+    logger.exception(f"Unhandled error: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "error_type": "internal"},
     )
-
-    # CORS – wide open for local dev; lock down in production.
-    application.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Register routers
-    application.include_router(agents.router)
-    application.include_router(calls.router)
-    application.include_router(internal.router)
-    application.include_router(operator.router)
-
-    @application.get("/health", tags=["health"])
-    async def health() -> dict:
-        """Liveness probe."""
-        return {"ok": True}
-
-    return application
-
-
-# Module-level app instance used by ``uvicorn app.main:app``.
-app = create_app()

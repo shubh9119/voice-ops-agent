@@ -1,94 +1,30 @@
-# docker-compose.yml — Full stack: LiveKit + Backend + Agent + Frontend
-# Usage: docker compose up --build
-# Pre-req: copy .env.example to .env and fill in API keys
-
-version: "3.9"
-
 services:
-  # ============================================================
-  # LiveKit Server — self-hosted SFU (Selective Forwarding Unit)
-  # ============================================================
-  livekit:
-    image: livekit/livekit-server:v1.8
-    command: --config /etc/livekit.yaml
-    ports:
-      - "7880:7880"         # HTTP/WS signalling
-      - "7881:7881"         # TCP media fallback
-      - "50000-50100:50000-50100/udp"  # UDP media (narrowed for dev)
-      - "3478:3478/udp"     # TURN/STUN
-    volumes:
-      - ./infra/livekit.yaml:/etc/livekit.yaml:ro
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7880"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  # ============================================================
-  # FastAPI Backend — agents CRUD, calls, tokens, compliance
-  # ============================================================
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file: .env
     environment:
-      DATABASE_URL: "sqlite+aiosqlite:///./voiceops.db"
-      LIVEKIT_URL: "ws://livekit:7880"
-      LIVEKIT_PUBLIC_URL: "${LIVEKIT_PUBLIC_URL:-ws://localhost:7880}"
-      LIVEKIT_API_KEY: "${LIVEKIT_API_KEY}"
-      LIVEKIT_API_SECRET: "${LIVEKIT_API_SECRET}"
-    depends_on:
-      livekit:
-        condition: service_healthy
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-models/text-embedding-004}
+      - CHROMA_PERSIST_DIR=/app/chroma_data
+    volumes:
+      - chroma_data:/app/chroma_data
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
 
-  # ============================================================
-  # LiveKit Agent Worker — voice pipeline (STT → LLM → TTS)
-  # ============================================================
-  agent:
+  frontend:
     build:
-      context: ./agent
-      dockerfile: Dockerfile
-    env_file: .env
-    environment:
-      LIVEKIT_URL: "ws://livekit:7880"
-      LIVEKIT_API_KEY: "${LIVEKIT_API_KEY}"
-      LIVEKIT_API_SECRET: "${LIVEKIT_API_SECRET}"
-      BACKEND_URL: "http://backend:8000"
-      INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
-      LLM_BASE_URL: "https://api.groq.com/openai/v1"
-      LLM_API_KEY: "${GROQ_API_KEY:-${LLM_API_KEY}}"
-    depends_on:
-      livekit:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    # Scale with: docker compose up --scale agent=3
-    deploy:
-      replicas: 2
-
-  # ============================================================
-  # Next.js Dashboard — call UI, operator panel, analytics
-  # ============================================================
-  web:
-    build:
-      context: ./web
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
-      NEXT_PUBLIC_LIVEKIT_URL: "${LIVEKIT_PUBLIC_URL:-ws://localhost:7880}"
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  chroma_data:

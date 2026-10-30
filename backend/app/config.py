@@ -1,48 +1,46 @@
-"""Application configuration using pydantic-settings."""
+"""Application configuration loaded from environment variables."""
 
 from pydantic_settings import BaseSettings
+from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    """Central application settings loaded from environment variables.
+    """All configuration read from env vars / .env file."""
 
-    All fields map to env vars in UPPER_SNAKE_CASE by default.
-    Example: ``livekit_api_key`` -> ``LIVEKIT_API_KEY``
-    """
+    # --- App ---
+    APP_NAME: str = "Omnibound Brand Q&A Agent"
+    APP_VERSION: str = "1.0.0"
+    DEBUG: bool = False
 
-    # Database
-    database_url: str = "sqlite+aiosqlite:///./voiceops.db"
+    # --- LLM (Google Gemini) ---
+    GOOGLE_API_KEY: str = ""
+    LLM_MODEL: str = "gemini-2.0-flash"
+    EMBEDDING_MODEL: str = "models/text-embedding-004"
+    EMBEDDING_DIMENSION: int = 768
 
-    # LiveKit connectivity
-    livekit_url: str = "ws://localhost:7880"
-    livekit_public_url: str = "ws://localhost:7880"
-    livekit_api_key: str = "APInKAhvt3yFR9G"
-    livekit_api_secret: str = "aBc1dEf2gHi3jKl4mNo5pQr6sTu7vWx8yZ90ABCD"
+    # --- Vector DB (ChromaDB) ---
+    CHROMA_PERSIST_DIR: str = "./chroma_data"
+    CHROMA_COLLECTION_PREFIX: str = "omnibound"
 
-    # Agent worker identity
-    agent_name: str = "support-agent"
+    # --- RAG ---
+    CHUNK_SIZE: int = 400
+    CHUNK_OVERLAP: int = 50
+    TOP_K_RESULTS: int = 5
+    MAX_RETRIES: int = 1
 
-    # Auth keys
-    internal_api_key: str = "dev-internal-key"   # agent-worker -> backend
-    operator_api_key: str = "dev-operator-key"   # operator dashboard
-
-    # LLM provider keys
-    openai_api_key: str = ""
-    llm_api_key: str = ""
-    groq_api_key: str = ""
-    llm_compliance_model: str = "gpt-4o-mini"
+    # --- Server ---
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
 
     model_config = {
-        "env_file": [".env", "../.env", "backend/.env"],
+        "env_file": ".env",
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
 
 
-# Module-level singleton
-settings = Settings()
-
-
+@lru_cache()
 def get_settings() -> Settings:
-    """Return the global Settings instance."""
-    return settings
+    """Cached settings singleton."""
+    return Settings()
